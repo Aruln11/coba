@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>nge cv yuk</title>
+    <title>VCF Generator Terminal</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
@@ -211,6 +211,7 @@
             const countryCodes = { '62': 'Indonesia', '852': 'Hong Kong', '1': 'Amerika', '54': 'Argentina', '49': 'Jerman', '60': 'Malaysia' };
             const countryCodeKeys = Object.keys(countryCodes).sort((a, b) => a.length - b.length);
 
+            // --- Fungsi Utilitas ---
             function print(message, className = '') { const p = document.createElement('p'); p.className = className; p.innerHTML = message.replace(/\n/g, '<br>'); output.appendChild(p); if (terminalContainer.style.display !== 'none') terminalContainer.scrollTop = terminalContainer.scrollHeight; }
             function showInput() { document.querySelector('.prompt-line').style.display = 'flex'; }
             function hideInput() { document.querySelector('.prompt-line').style.display = 'none'; }
@@ -338,8 +339,7 @@
                 switch (stage) {
                     case 'welcome':
                         print("fydialgo makasih bang udah dicobain\n------------------------");
-                        print("Ketik 'start' untuk proses VCF, atau 'rekap' untuk kalkulator.");
-                        print("Ketik 'help' untuk daftar perintah.", "info");
+                        print("Ketik 'start' untuk memulai, atau 'help' untuk bantuan.");
                         break;
                     case 'get_default_country':
                         isTerminalActive = false; hideInput();

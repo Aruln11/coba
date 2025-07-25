@@ -44,26 +44,6 @@
         #output p, .rekap-results p { margin: 5px 0; white-space: pre-wrap; word-wrap: break-word; text-shadow: 0 0 5px var(--main-color); }
         .prompt-line { display: flex; align-items: center; margin-top: 1em; }
         
-        /* --- PERUBAHAN CSS UTAMA --- */
-        #terminal-input {
-            flex-grow: 1; /* Biarkan input mengisi sisa ruang */
-            background-color: transparent;
-            border: none;
-            outline: none; /* Hapus outline saat fokus */
-            color: var(--main-color);
-            font-family: inherit;
-            font-size: inherit;
-            padding: 0;
-            margin: 0;
-            text-shadow: 0 0 5px var(--main-color); /* Cocokkan dengan gaya teks lain */
-        }
-        /* Mengubah warna kursor bawaan browser */
-        #terminal-input {
-            caret-color: var(--main-color);
-        }
-        /* Hapus kursor palsu karena kita pakai kursor asli dari input */
-        .cursor { display: none; }
-
         .rekap-input, .rekap-data {
             background-color: transparent;
             border: 1px solid var(--main-color);
@@ -131,39 +111,79 @@
         }
 
         #loader {
-            display: none; position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%; background-color: rgba(13, 2, 26, 0.9);
-            z-index: 9999; justify-content: center; align-items: center;
-            flex-direction: column; text-align: center;
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(13, 2, 26, 0.9);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
         }
         .spinner {
-            border: 4px solid var(--border-color); border-top: 4px solid var(--main-color);
-            border-radius: 50%; width: 40px; height: 40px;
-            animation: spin 1s linear infinite; margin-bottom: 15px;
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--main-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- PERBAIKAN 1: Styling untuk input asli agar terlihat seperti terminal --- */
+        .prompt-text {
+            margin-right: 8px;
+        }
+        #command-input {
+            background-color: transparent;
+            border: none;
+            outline: none;
+            color: var(--main-color);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 16px;
+            width: 100%;
+            caret-color: var(--main-color); /* kursor ketik asli */
+        }
+        .cursor { display: none; } /* Sembunyikan kursor palsu */
+        /* -------------------------------------------------------------------------- */
         
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes fadeInBg { from { background-color: transparent; } to { background-color: var(--bg-color); } }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes fadeInBg {
+            from { background-color: transparent; }
+            to { background-color: var(--bg-color); }
+        }
 
         @media (max-width: 600px) {
-            .input-group { flex-direction: column; align-items: stretch; }
+            .input-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
         }
     </style>
 </head>
 <body>
     <div id="terminal-container" class="main-container">
         <div id="output"></div>
-        <form id="terminal-form" class="prompt-line">
-            <span class="prompt-text">>_&nbsp;</span> <input type="text" id="terminal-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-            </form>
-    </div>
+        <div class="prompt-line">
+            <span class="prompt-text">>_</span>
+            <input type="text" id="command-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus />
+            <span class="cursor"></span> </div>
+        </div>
 
     <div id="rekap1-container" class="main-container rekap-container" style="display:none;">
         <h1>Rekap Khusus Admin</h1>
         <div class="rekap-group">
             <p>Paste data rekap di sini (Format: Nama Grup = Jumlah Kontak):</p>
-            <textarea id="rekap1-data" class="rekap-data" placeholder="dark sistem 001 = 50 kontak&#10;dark sistem 002 = 40 kontak"></textarea>
+            <textarea id="rekap1-data" class="rekap-data" placeholder="Mobile Legends BB1 = 50 &#10;"></textarea>
         </div>
         <div class="rekap-group">
             <p>Harga per Kontak (Rp):</p>
@@ -179,7 +199,7 @@
         <h1>Rekap Khusus D9</h1>
         <div class="rekap-group">
             <p>Paste data rekap di sini (Format: Data = Jumlah, diakhiri nama pemilik):</p>
-            <textarea id="rekap2-data" class="rekap-data" placeholder="Fanny 45 = 83&#10;Fanny 46 = 91&#10;@arul&#10;&#10;Fanny 47 = 53&#10;fanny"></textarea>
+            <textarea id="rekap2-data" class="rekap-data" placeholder="Mobile Legends BB1 = 50&#10;Mobile Legends BB1 = 50&#10;@Arul.n11"></textarea>
         </div>
         <div class="rekap-group">
             <p>Harga per Kontak (Rp):</p>
@@ -198,28 +218,41 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // --- PERUBAHAN JAVASCRIPT UTAMA ---
+            // --- Elemen Global ---
             const terminalContainer = document.getElementById('terminal-container');
             const rekap1Container = document.getElementById('rekap1-container');
             const rekap2Container = document.getElementById('rekap2-container');
             const output = document.getElementById('output');
             const loader = document.getElementById('loader');
             const loaderText = document.getElementById('loader-text');
-            const terminalForm = document.getElementById('terminal-form');
-            // Mengganti input tersembunyi dengan input yang baru
-            const terminalInput = document.getElementById('terminal-input');
+            
+            // --- PERBAIKAN 1: Menggunakan elemen input yang sebenarnya ---
+            const commandInput = document.getElementById('command-input');
             let isTerminalActive = true; 
 
-            // Hapus variabel yang tidak perlu
-            // const commandDisplay = document.getElementById('command-display');
+            // PERBAIKAN 1: Fokuskan ke input saat terminal diklik agar keyboard muncul
+            terminalContainer.addEventListener('click', (e) => {
+                if(e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') {
+                    commandInput.focus();
+                }
+            });
+            // ----------------------------------------------------------
 
             let stage = 'welcome';
             let params = {};
             const countryCodes = { '62': 'Indonesia', '852': 'Hong Kong', '1': 'Amerika', '54': 'Argentina', '49': 'Jerman', '60': 'Malaysia' };
             const countryCodeKeys = Object.keys(countryCodes).sort((a, b) => a.length - b.length);
+            
+            // --- PERBAIKAN 2: Fungsi utilitas untuk scroll terminal ke bawah ---
+            function scrollTerminalToBottom() {
+                setTimeout(() => {
+                    terminalContainer.scrollTop = terminalContainer.scrollHeight;
+                }, 0);
+            }
+            // -----------------------------------------------------------------
 
-            function print(message, className = '') { const p = document.createElement('p'); p.className = className; p.innerHTML = message.replace(/\n/g, '<br>'); output.appendChild(p); if (terminalContainer.style.display !== 'none') terminalContainer.scrollTop = terminalContainer.scrollHeight; }
-            function showInput() { document.querySelector('.prompt-line').style.display = 'flex'; }
+            function print(message, className = '') { const p = document.createElement('p'); p.className = className; p.innerHTML = message.replace(/\n/g, '<br>'); output.appendChild(p); scrollTerminalToBottom(); }
+            function showInput() { document.querySelector('.prompt-line').style.display = 'flex'; commandInput.focus(); }
             function hideInput() { document.querySelector('.prompt-line').style.display = 'none'; }
             function clearScreen() { output.innerHTML = ''; }
             function showLoader(message) { loaderText.textContent = message; loader.style.display = 'flex'; }
@@ -286,47 +319,69 @@
                 link.download = fileName;
                 link.innerHTML = `[ Download ${fileName} ]`;
                 const p = document.createElement('p'); p.appendChild(link); output.appendChild(p);
+                scrollTerminalToBottom(); // PERBAIKAN 2: Pastikan terminal scroll setelah link dibuat
             }
 
             function generateAndDownloadZIP(vcfData, fileBase, totalContacts, perFile) {
                 showLoader('Menggabungkan file ke dalam ZIP...');
-                const zip = new JSZip();
-                vcfData.forEach(file => { zip.file(file.name, file.content); });
-                zip.generateAsync({ type: "blob" }).then(function(content) {
+                // Gunakan try-catch untuk menangani jika JSZip gagal dimuat
+                try {
+                    const zip = new JSZip();
+                    vcfData.forEach(file => { zip.file(file.name, file.content); });
+                    zip.generateAsync({ type: "blob" }).then(function(content) {
+                        hideLoader();
+                        print("\nBerhasil!", 'success');
+                        const zipFileName = `${fileBase}.zip`;
+                        displayDownloadLink(content, zipFileName);
+                        print(`Klik link di atas untuk mengunduh.`, 'info');
+                        const namesList = [];
+                        const totalFiles = Math.ceil(totalContacts / perFile);
+                        for (let i = 1; i <= totalFiles; i++) {
+                            namesList.push(`${fileBase}${i}`);
+                        }
+                        const listText = namesList.join('\n');
+                        const listContainer = document.createElement('div');
+                        listContainer.style.maxHeight = '150px';
+                        listContainer.style.overflowY = 'auto';
+                        listContainer.style.backgroundColor = 'rgba(0,0,0,0.2)';
+                        listContainer.style.border = '1px solid var(--border-color)';
+                        listContainer.style.padding = '10px';
+                        listContainer.style.marginTop = '10px';
+                        const listContent = document.createElement('p');
+                        listContent.style.whiteSpace = 'pre-wrap';
+                        listContent.style.wordBreak = 'break-all';
+                        listContent.textContent = listText;
+                        listContainer.appendChild(listContent);
+                        output.appendChild(listContainer);
+                        const copyButton = document.createElement('button');
+                        copyButton.textContent = "Salin Daftar Nama";
+                        copyButton.className = 'terminal-button';
+                        copyButton.onclick = function() {
+                            navigator.clipboard.writeText(listText).then(() => {
+                                copyButton.textContent = "Berhasil Disalin!";
+                                setTimeout(() => { copyButton.textContent = "Salin Daftar Nama"; }, 2000);
+                            }).catch(err => {
+                                print('Gagal menyalin: ' + err, 'error');
+                            });
+                        };
+                        output.appendChild(copyButton);
+                        scrollTerminalToBottom(); // PERBAIKAN 2: Scroll setelah semua elemen download ditambahkan
+                    }).catch(err => {
+                        hideLoader();
+                        print(`Error saat membuat ZIP: ${err}`, 'error');
+                    });
+                } catch (e) {
                     hideLoader();
-                    print("\nBerhasil!", 'success');
-                    const zipFileName = `${fileBase}.zip`;
-                    displayDownloadLink(content, zipFileName);
-                    print(`Klik link di atas untuk mengunduh.`, 'info');
-                    const namesList = [];
-                    const totalFiles = Math.ceil(totalContacts / perFile);
-                    for (let i = 1; i <= totalFiles; i++) { namesList.push(`${fileBase}${i}`); }
-                    const listText = namesList.join('\n');
-                    const listContainer = document.createElement('div');
-                    listContainer.style.cssText = 'max-height: 150px; overflow-y: auto; background-color: rgba(0,0,0,0.2); border: 1px solid var(--border-color); padding: 10px; margin-top: 10px;';
-                    const listContent = document.createElement('p');
-                    listContent.style.cssText = 'white-space: pre-wrap; word-break: break-all;';
-                    listContent.textContent = listText;
-                    listContainer.appendChild(listContent);
-                    output.appendChild(listContainer);
-                    const copyButton = document.createElement('button');
-                    copyButton.textContent = "Salin Daftar Nama";
-                    copyButton.className = 'terminal-button';
-                    copyButton.onclick = function() {
-                        navigator.clipboard.writeText(listText).then(() => {
-                            copyButton.textContent = "Berhasil Disalin!";
-                            setTimeout(() => { copyButton.textContent = "Salin Daftar Nama"; }, 2000);
-                        }).catch(err => { print('Gagal menyalin: ' + err, 'error'); });
-                    };
-                    output.appendChild(copyButton);
-                }).catch(err => {
-                    hideLoader();
-                    print(`Error saat membuat ZIP: ${err}`, 'error');
-                });
+                    print(`Error fatal: Pustaka JSZip tidak dapat dimuat. Periksa koneksi internet Anda.`, 'error');
+                }
             }
             
             function processFile(file) {
-                 if (!file || !file.type.match('text.*')) { print("Error: Harap pilih file .txt", "error"); showInput(); return; }
+                 if (!file || !file.type.match('text.*')) {
+                    print("Error: Harap pilih file .txt", "error");
+                    showInput();
+                    return;
+                }
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     const contactsContent = event.target.result;
@@ -344,22 +399,28 @@
             function showPrompt() {
                 switch (stage) {
                     case 'welcome':
-                        print("fydialgo makasih bang udah dicobain\n------------------------");
+                        print("makasih bang udah dicoba\n------------------------");
                         print("Ketik 'start' untuk proses VCF, atau 'rekap' untuk kalkulator.");
                         print("Ketik 'help' untuk daftar perintah.", "info");
                         break;
                     case 'get_default_country':
-                        isTerminalActive = false; hideInput();
+                        isTerminalActive = false;
+                        hideInput();
                         print("\nTentukan Negara Asal untuk Data Kontak.");
                         const uiContainer = document.createElement('div');
                         uiContainer.className = 'input-group';
                         const selectMenu = document.createElement('select');
                         selectMenu.className = 'inline-select';
-                        const sortedCountries = Object.entries(countryCodes).sort(([, nameA], [, nameB]) => nameA.localeCompare(nameB));
+                        const sortedCountries = Object.entries(countryCodes).sort(([, nameA], [, nameB]) => {
+                            return nameA.localeCompare(nameB);
+                        });
                         for (const [code, name] of sortedCountries) {
                             const option = document.createElement('option');
-                            option.value = code; option.textContent = name;
-                            if (code === '62') { option.selected = true; }
+                            option.value = code;
+                            option.textContent = name;
+                            if (code === '62') {
+                                option.selected = true;
+                            }
                             selectMenu.appendChild(option);
                         }
                         uiContainer.appendChild(selectMenu);
@@ -370,16 +431,21 @@
                             params.default_country = selectMenu.value;
                             const countryName = countryCodes[selectMenu.value];
                             print(`[+] Negara asal telah diatur ke: ${countryName}.`, 'success');
-                            uiContainer.remove(); stage = 'get_input_method';
-                            showInput(); showPrompt(); isTerminalActive = true;
+                            uiContainer.remove();
+                            stage = 'get_input_method';
+                            showInput();
+                            showPrompt();
+                            isTerminalActive = true;
                         };
                         uiContainer.appendChild(confirmButton);
                         output.appendChild(uiContainer);
+                        scrollTerminalToBottom();
                         break;
                     case 'get_input_method': print("\nPilih Metode Input: 'upload' atau 'paste'?"); break;
                     case 'handle_paste':
-                        isTerminalActive = false; hideInput();
+                        isTerminalActive = false;
                         print("\nSilakan salin dan tempel daftar kontak Anda di bawah ini.");
+                        hideInput();
                         const textarea = document.createElement('textarea');
                         textarea.style="width: 100%; height: 150px; background: rgba(0,0,0,0.3); color: var(--main-color); border: 1px solid var(--main-color); margin-top:10px; font-family:inherit; resize:vertical; box-sizing: border-box;";
                         output.appendChild(textarea);
@@ -387,6 +453,7 @@
                         doneButton.textContent = "Lanjutkan";
                         doneButton.className = 'terminal-button';
                         output.appendChild(doneButton);
+                        scrollTerminalToBottom();
                         textarea.focus();
                         doneButton.onclick = () => {
                             const contactsContent = textarea.value;
@@ -398,15 +465,16 @@
                             } else {
                                 print("Tidak ada input. Proses dibatalkan.", "error"); stage = 'welcome'; showPrompt();
                             }
-                            textarea.remove(); doneButton.remove(); showInput(); isTerminalActive = true;
+                            textarea.remove(); doneButton.remove(); showInput();
+                            isTerminalActive = true;
                         };
                         break;
                     case 'handle_upload':
                         hideInput();
-                        print("\nSilakan pilih file .txt atau seret file ke area di bawah.");
+                        print("\nSilakan pilih file.txt atau seret file ke area di bawah.");
                         const uploadArea = document.createElement('div');
                         uploadArea.id = 'upload-area';
-                        uploadArea.innerHTML = `<p>Seret & Lepas File .txt di Sini</p><p>atau</p>`;
+                        uploadArea.innerHTML = `<p>Seret & Lepas File.txt di Sini</p><p>atau</p>`;
                         const fileInput = document.createElement('input'); fileInput.type = 'file'; fileInput.accept = '.txt'; fileInput.style.display = 'none';
                         const uploadLabel = document.createElement('label');
                         uploadLabel.textContent = "[ Pilih File ]";
@@ -414,6 +482,7 @@
                         uploadArea.appendChild(uploadLabel);
                         output.appendChild(fileInput); 
                         output.appendChild(uploadArea);
+                        scrollTerminalToBottom();
                         uploadLabel.onclick = () => fileInput.click();
                         fileInput.onchange = (e) => { uploadArea.remove(); processFile(e.target.files[0]); };
                         uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); uploadArea.classList.add('dragover'); });
@@ -421,8 +490,8 @@
                         uploadArea.addEventListener('drop', (e) => { e.preventDefault(); e.stopPropagation(); uploadArea.classList.remove('dragover'); uploadArea.remove(); processFile(e.dataTransfer.files[0]); });
                         break;
                     case 'get_per_file': print("\nTentukan jumlah kontak per file (Contoh: 50)"); break;
-                    case 'get_file_base': print("\nMasukan nama file output (Contoh: Fanny)"); break;
-                    case 'get_name_base': print("\nBerikan nama isi kontak (Contoh: Dark Sistem)"); break;
+                    case 'get_file_base': print("\nMasukan nama file output (Contoh: Mobile Legends BB1)"); break;
+                    case 'get_name_base': print("\nBerikan nama isi kontak (Contoh: Arul.n11)"); break;
                     case 'confirm':
                         const totalContacts = (params.contacts || '').split('\n').filter(line => line.trim() !== '').length;
                         const totalFiles = Math.ceil(totalContacts / params.per_file);
@@ -445,97 +514,91 @@
                         print(`Ketik 'proses' untuk membuat file, atau 'batal' untuk mengulang.`);
                         break;
                 }
+                showInput();
             }
-
-            // --- SISTEM INPUT BARU ---
-            // Saat wadah terminal diklik, fokuskan ke input
-            terminalContainer.addEventListener('click', () => {
-                if (isTerminalActive) {
-                    terminalInput.focus();
-                }
-            });
             
-            // Hapus listener untuk commandDisplay karena sudah tidak ada
-
-            terminalForm.addEventListener('submit', (e) => {
-                e.preventDefault();
+            // --- PERBAIKAN 1: Mengganti listener 'keydown' dokumen dengan listener di input ---
+            commandInput.addEventListener('keydown', function(e) {
                 if (!isTerminalActive) return;
 
-                // Ambil nilai langsung dari terminalInput
-                const originalInput = terminalInput.value.trim();
-                const command = originalInput.toLowerCase();
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const originalInput = commandInput.value.trim();
+                    const command = originalInput.toLowerCase();
+                    commandInput.value = ''; // Kosongkan input setelah dikirim
 
-                if (originalInput) print(`>_ ${originalInput}`);
-                
-                // Kosongkan input setelah submit
-                terminalInput.value = '';
-                
-                if (command === '') return;
-                
-                if (command === 'cls') { clearScreen(); showPrompt(); return; }
-                if (command === 'help') { showHelp(); return; }
-                if (command === 'batal') { stage = 'welcome'; params = {}; print("\nProses dibatalkan.", 'info'); clearScreen(); showPrompt(); return; }
+                    if (originalInput) print(`>_ ${originalInput}`);
+                    if (command === '') return;
 
-                if (command.startsWith('rekap')) {
-                    if (command === 'rekap 1') {
-                        isTerminalActive = false;
-                        terminalContainer.style.display = 'none';
-                        rekap2Container.style.display = 'none';
-                        rekap1Container.style.display = 'block';
-                    } else if (command === 'rekap 2') {
-                        isTerminalActive = false;
-                        terminalContainer.style.display = 'none';
-                        rekap1Container.style.display = 'none';
-                        rekap2Container.style.display = 'block';
-                    } else {
-                        print(`Perintah '${originalInput}' tidak dikenal. Ketik 'help' untuk bantuan.`, 'error');
-                    }
-                    return;
-                }
-
-                switch (stage) {
-                    case 'welcome': 
-                        if (command === 'start') { stage = 'get_default_country'; showPrompt(); } 
-                        else { print(`Perintah '${originalInput}' tidak dikenal.`, 'error'); }
-                        break;
-                    case 'get_input_method':
-                        if (command === 'upload') { stage = 'handle_upload'; showPrompt(); }
-                        else if (command === 'paste') { stage = 'handle_paste'; showPrompt(); }
-                        else { print("Pilihan tidak valid. Gunakan 'upload' atau 'paste'.", "error"); }
-                        break;
-                    case 'get_per_file':
-                        const num = parseInt(command);
-                        if (isNaN(num) || num <= 0) { print("Error: Masukkan angka positif yang valid.", "error"); } 
-                        else { params.per_file = num; stage = 'get_file_base'; showPrompt(); }
-                        break;
-                    case 'get_file_base':
-                        if (!originalInput) { print("Error: Nama file tidak boleh kosong.", "error"); break; }
-                        params.file_base = originalInput; stage = 'get_name_base'; showPrompt();
-                        break;
-                    case 'get_name_base':
-                        if (!originalInput) { print("Error: Nama kontak tidak boleh kosong.", "error"); break; }
-                        params.name_base = originalInput; stage = 'confirm'; showPrompt();
-                        break;
-                    case 'confirm':
-                        if (command === 'proses') {
-                            const totalContacts = (params.contacts || '').split('\n').filter(line => line.trim() !== '').length;
-                            showLoader('Membuat VCF...');
-                            setTimeout(() => {
-                                const vcfData = createVCFs(params.contacts, params.per_file, params.file_base, params.name_base, params.default_country);
-                                if (vcfData && vcfData.length > 0) {
-                                    generateAndDownloadZIP(vcfData, params.file_base, totalContacts, params.per_file); 
-                                } else {
-                                    hideLoader();
-                                    print("Tidak ada VCF yang dibuat. Periksa kembali kontak Anda.", "error");
-                                }
-                                stage = 'welcome';
-                                setTimeout(() => showPrompt(), 500);
-                            }, 50);
+                    if (command === 'cls') { clearScreen(); showPrompt(); return; }
+                    if (command === 'help') { showHelp(); return; }
+                    if (command === 'batal') { stage = 'welcome'; params = {}; print("\nProses dibatalkan.", 'info'); clearScreen(); showPrompt(); return; }
+                    
+                    if (command.startsWith('rekap')) {
+                        if (command === 'rekap 1') {
+                            isTerminalActive = false;
+                            terminalContainer.style.display = 'none';
+                            rekap2Container.style.display = 'none';
+                            rekap1Container.style.display = 'block';
+                        } else if (command === 'rekap 2') {
+                            isTerminalActive = false;
+                            terminalContainer.style.display = 'none';
+                            rekap1Container.style.display = 'none';
+                            rekap2Container.style.display = 'block';
+                        } else {
+                            print(`Perintah '${originalInput}' tidak dikenal. Ketik 'help' untuk bantuan.`, 'error');
                         }
-                        break;
+                        return;
+                    }
+
+                    switch (stage) {
+                        case 'welcome': 
+                            if (command === 'start') { stage = 'get_default_country'; showPrompt(); } 
+                            else { print(`Perintah '${originalInput}' tidak dikenal.`, 'error'); }
+                            break;
+                        case 'get_input_method':
+                            if (command === 'upload') { stage = 'handle_upload'; showPrompt(); }
+                            else if (command === 'paste') { stage = 'handle_paste'; showPrompt(); }
+                            else { print("Pilihan tidak valid. Gunakan 'upload' atau 'paste'.", "error"); }
+                            break;
+                        case 'get_per_file':
+                            const num = parseInt(command);
+                            if (isNaN(num) || num <= 0) { print("Error: Masukkan angka positif yang valid.", "error"); } 
+                            else { params.per_file = num; stage = 'get_file_base'; showPrompt(); }
+                            break;
+                        case 'get_file_base':
+                            if (!originalInput) { print("Error: Nama file tidak boleh kosong.", "error"); break; }
+                            params.file_base = originalInput; stage = 'get_name_base'; showPrompt();
+                            break;
+                        case 'get_name_base':
+                            if (!originalInput) { print("Error: Nama kontak tidak boleh kosong.", "error"); break; }
+                            params.name_base = originalInput; stage = 'confirm'; showPrompt();
+                            break;
+                        case 'confirm':
+                            if (command === 'proses') {
+                                const totalContacts = (params.contacts || '').split('\n').filter(line => line.trim() !== '').length;
+                                showLoader('Membuat VCF...');
+                                setTimeout(() => {
+                                    const vcfData = createVCFs(params.contacts, params.per_file, params.file_base, params.name_base, params.default_country);
+                                    if (vcfData && vcfData.length > 0) {
+                                        generateAndDownloadZIP(vcfData, params.file_base, totalContacts, params.per_file); 
+                                    } else {
+                                        hideLoader();
+                                        print("Tidak ada VCF yang dibuat. Periksa kembali kontak Anda.", "error");
+                                    }
+                                    stage = 'welcome';
+                                    setTimeout(() => showPrompt(), 500);
+                                }, 50);
+                            } else if (command === 'batal') {
+                                stage = 'welcome'; params = {}; print("\nProses dibatalkan.", 'info'); clearScreen(); showPrompt();
+                            }
+                            break;
+                    }
                 }
             });
-
+            // Hapus listener 'keydown' global dan 'paste' yang lama karena tidak diperlukan lagi
+            // ---------------------------------------------------------------------------------
+            
             function setupRekap1Tool() {
                 const rekapDataEl = document.getElementById('rekap1-data');
                 const rekapHargaEl = document.getElementById('rekap1-harga');
@@ -564,7 +627,7 @@
                     rekap1Container.style.display = 'none';
                     terminalContainer.style.display = 'block';
                     isTerminalActive = true;
-                    terminalInput.focus();
+                    commandInput.focus();
                 });
             }
             
@@ -574,28 +637,37 @@
                 const hitungBtn = document.getElementById('rekap2-hitung');
                 const kembaliBtn = document.getElementById('rekap2-kembali');
                 const resultsEl = document.getElementById('rekap2-results');
+
                 hitungBtn.addEventListener('click', () => {
                     const data = rekapDataEl.value.trim();
                     const harga = parseFloat(rekapHargaEl.value);
                     if (!data) { resultsEl.innerHTML = '<p class="error">Error: Data rekap tidak boleh kosong.</p>'; return; }
                     if (isNaN(harga) || harga <= 0) { resultsEl.innerHTML = '<p class="error">Error: Harga per kontak tidak valid.</p>'; return; }
+                    
                     resultsEl.innerHTML = '';
                     document.getElementById('rekap2-copy-btn')?.remove();
+                    
                     const lines = data.split('\n');
                     let subtotalKontak = 0;
                     let hasResults = false;
                     const formatter = new Intl.NumberFormat('id-ID');
+                    
                     const displaySubtotal = (ownerName) => {
                         if (subtotalKontak > 0) {
                             hasResults = true;
                             const subtotalPendapatan = subtotalKontak * harga;
                             const resultBlock = document.createElement('div');
                             resultBlock.style.marginTop = '15px';
-                            resultBlock.innerHTML = `<p class="info">Hasil untuk: ${ownerName}</p><p class="success">Total Kontak Masuk: ${formatter.format(subtotalKontak)}</p><p class="success">Total Pendapatan: ${formatter.format(subtotalKontak)} x Rp ${formatter.format(harga)} = Rp ${formatter.format(subtotalPendapatan)}</p>`;
+                            resultBlock.innerHTML = `
+                                <p class="info">Hasil untuk: ${ownerName}</p>
+                                <p class="success">Total Kontak Masuk: ${formatter.format(subtotalKontak)}</p>
+                                <p class="success">Total Pendapatan: ${formatter.format(subtotalKontak)} x Rp ${formatter.format(harga)} = Rp ${formatter.format(subtotalPendapatan)}</p>
+                            `;
                             resultsEl.appendChild(resultBlock);
                             subtotalKontak = 0;
                         }
                     };
+
                     lines.forEach(line => {
                         const trimmedLine = line.trim();
                         if (trimmedLine.includes('=')) {
@@ -608,9 +680,11 @@
                             displaySubtotal(trimmedLine);
                         }
                     });
+                    
                     if (subtotalKontak > 0) {
                         displaySubtotal("Sisa (tanpa nama pemilik di akhir)");
                     }
+
                     if(hasResults) {
                         const copyButton = document.createElement('button');
                         copyButton.id = 'rekap2-copy-btn';
@@ -630,18 +704,18 @@
                         kembaliBtn.parentElement.insertBefore(copyButton, kembaliBtn.previousElementSibling);
                     }
                 });
+                
                 kembaliBtn.addEventListener('click', () => {
                     rekap2Container.style.display = 'none';
                     terminalContainer.style.display = 'block';
                     isTerminalActive = true;
-                    terminalInput.focus();
+                    commandInput.focus();
                 });
             }
 
             setupRekap1Tool();
             setupRekap2Tool();
             showPrompt();
-            terminalInput.focus(); // Fokus ke input yang benar saat pertama kali dimuat
         });
     </script>
 </body>

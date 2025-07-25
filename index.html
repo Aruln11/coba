@@ -194,6 +194,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // --- Elemen Global ---
             const terminalContainer = document.getElementById('terminal-container');
             const rekap1Container = document.getElementById('rekap1-container');
             const rekap2Container = document.getElementById('rekap2-container');
@@ -336,7 +337,7 @@
             function showPrompt() {
                 switch (stage) {
                     case 'welcome':
-                        print("VCF GENERATOR TERMINAL\n------------------------");
+                        print("fydialgo makasih bang udah dicobain\n------------------------");
                         print("Ketik 'start' untuk proses VCF, atau 'rekap' untuk kalkulator.");
                         print("Ketik 'help' untuk daftar perintah.", "info");
                         break;
@@ -438,7 +439,8 @@
                         break;
                 }
             }
-            
+
+            // --- SISTEM INPUT BARU UNTUK MOBILE & DESKTOP ---
             terminalContainer.addEventListener('click', () => {
                 if (isTerminalActive) {
                     hiddenInput.focus();
@@ -452,15 +454,21 @@
             terminalForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 if (!isTerminalActive) return;
+
                 const originalInput = hiddenInput.value.trim();
                 const command = originalInput.toLowerCase();
+
                 if (originalInput) print(`>_ ${originalInput}`);
+                
                 hiddenInput.value = '';
                 commandDisplay.textContent = '';
+                
                 if (command === '') return;
+                
                 if (command === 'cls') { clearScreen(); showPrompt(); return; }
                 if (command === 'help') { showHelp(); return; }
                 if (command === 'batal') { stage = 'welcome'; params = {}; print("\nProses dibatalkan.", 'info'); clearScreen(); showPrompt(); return; }
+
                 if (command.startsWith('rekap')) {
                     if (command === 'rekap 1') {
                         isTerminalActive = false;
@@ -477,6 +485,7 @@
                     }
                     return;
                 }
+
                 switch (stage) {
                     case 'welcome': 
                         if (command === 'start') { stage = 'get_default_country'; showPrompt(); } 

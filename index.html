@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VCF Generator Terminal</title>
+    <title>nge cv yuk</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
@@ -44,6 +44,26 @@
         #output p, .rekap-results p { margin: 5px 0; white-space: pre-wrap; word-wrap: break-word; text-shadow: 0 0 5px var(--main-color); }
         .prompt-line { display: flex; align-items: center; margin-top: 1em; }
         
+        /* --- PERUBAHAN CSS UTAMA --- */
+        #terminal-input {
+            flex-grow: 1; /* Biarkan input mengisi sisa ruang */
+            background-color: transparent;
+            border: none;
+            outline: none; /* Hapus outline saat fokus */
+            color: var(--main-color);
+            font-family: inherit;
+            font-size: inherit;
+            padding: 0;
+            margin: 0;
+            text-shadow: 0 0 5px var(--main-color); /* Cocokkan dengan gaya teks lain */
+        }
+        /* Mengubah warna kursor bawaan browser */
+        #terminal-input {
+            caret-color: var(--main-color);
+        }
+        /* Hapus kursor palsu karena kita pakai kursor asli dari input */
+        .cursor { display: none; }
+
         .rekap-input, .rekap-data {
             background-color: transparent;
             border: 1px solid var(--main-color);
@@ -122,13 +142,6 @@
             animation: spin 1s linear infinite; margin-bottom: 15px;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .cursor {
-            display: inline-block; background-color: var(--main-color);
-            width: 10px; height: 1.2em; animation: blink 1s step-end infinite;
-            vertical-align: middle;
-        }
-        @keyframes blink { from, to { background-color: transparent; } 50% { background-color: var(--main-color); } }
         
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes fadeInBg { from { background-color: transparent; } to { background-color: var(--bg-color); } }
@@ -136,23 +149,14 @@
         @media (max-width: 600px) {
             .input-group { flex-direction: column; align-items: stretch; }
         }
-        
-        #hidden-input {
-            position: absolute; top: -9999px; left: -9999px; opacity: 0;
-            pointer-events: none; width: 0; height: 0; border: none;
-            padding: 0; margin: 0;
-        }
     </style>
 </head>
 <body>
     <div id="terminal-container" class="main-container">
         <div id="output"></div>
         <form id="terminal-form" class="prompt-line">
-            <span class="prompt-text">>_</span>
-            <span id="command-display"></span>
-            <span class="cursor"></span>
-            <input type="text" id="hidden-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        </form>
+            <span class="prompt-text">>_&nbsp;</span> <input type="text" id="terminal-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+            </form>
     </div>
 
     <div id="rekap1-container" class="main-container rekap-container" style="display:none;">
@@ -194,24 +198,26 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // --- Elemen Global ---
+            // --- PERUBAHAN JAVASCRIPT UTAMA ---
             const terminalContainer = document.getElementById('terminal-container');
             const rekap1Container = document.getElementById('rekap1-container');
             const rekap2Container = document.getElementById('rekap2-container');
             const output = document.getElementById('output');
             const loader = document.getElementById('loader');
             const loaderText = document.getElementById('loader-text');
-            const commandDisplay = document.getElementById('command-display');
             const terminalForm = document.getElementById('terminal-form');
-            const hiddenInput = document.getElementById('hidden-input');
+            // Mengganti input tersembunyi dengan input yang baru
+            const terminalInput = document.getElementById('terminal-input');
             let isTerminalActive = true; 
+
+            // Hapus variabel yang tidak perlu
+            // const commandDisplay = document.getElementById('command-display');
 
             let stage = 'welcome';
             let params = {};
             const countryCodes = { '62': 'Indonesia', '852': 'Hong Kong', '1': 'Amerika', '54': 'Argentina', '49': 'Jerman', '60': 'Malaysia' };
             const countryCodeKeys = Object.keys(countryCodes).sort((a, b) => a.length - b.length);
 
-            // --- Fungsi Utilitas ---
             function print(message, className = '') { const p = document.createElement('p'); p.className = className; p.innerHTML = message.replace(/\n/g, '<br>'); output.appendChild(p); if (terminalContainer.style.display !== 'none') terminalContainer.scrollTop = terminalContainer.scrollHeight; }
             function showInput() { document.querySelector('.prompt-line').style.display = 'flex'; }
             function hideInput() { document.querySelector('.prompt-line').style.display = 'none'; }
@@ -339,7 +345,8 @@
                 switch (stage) {
                     case 'welcome':
                         print("fydialgo makasih bang udah dicobain\n------------------------");
-                        print("Ketik 'start' untuk memulai, atau 'help' untuk bantuan.");
+                        print("Ketik 'start' untuk proses VCF, atau 'rekap' untuk kalkulator.");
+                        print("Ketik 'help' untuk daftar perintah.", "info");
                         break;
                     case 'get_default_country':
                         isTerminalActive = false; hideInput();
@@ -440,28 +447,28 @@
                 }
             }
 
-            // --- SISTEM INPUT BARU UNTUK MOBILE & DESKTOP ---
+            // --- SISTEM INPUT BARU ---
+            // Saat wadah terminal diklik, fokuskan ke input
             terminalContainer.addEventListener('click', () => {
                 if (isTerminalActive) {
-                    hiddenInput.focus();
+                    terminalInput.focus();
                 }
             });
-
-            hiddenInput.addEventListener('input', () => {
-                commandDisplay.textContent = hiddenInput.value;
-            });
+            
+            // Hapus listener untuk commandDisplay karena sudah tidak ada
 
             terminalForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 if (!isTerminalActive) return;
 
-                const originalInput = hiddenInput.value.trim();
+                // Ambil nilai langsung dari terminalInput
+                const originalInput = terminalInput.value.trim();
                 const command = originalInput.toLowerCase();
 
                 if (originalInput) print(`>_ ${originalInput}`);
                 
-                hiddenInput.value = '';
-                commandDisplay.textContent = '';
+                // Kosongkan input setelah submit
+                terminalInput.value = '';
                 
                 if (command === '') return;
                 
@@ -557,7 +564,7 @@
                     rekap1Container.style.display = 'none';
                     terminalContainer.style.display = 'block';
                     isTerminalActive = true;
-                    hiddenInput.focus();
+                    terminalInput.focus();
                 });
             }
             
@@ -627,14 +634,14 @@
                     rekap2Container.style.display = 'none';
                     terminalContainer.style.display = 'block';
                     isTerminalActive = true;
-                    hiddenInput.focus();
+                    terminalInput.focus();
                 });
             }
 
             setupRekap1Tool();
             setupRekap2Tool();
             showPrompt();
-            hiddenInput.focus();
+            terminalInput.focus(); // Fokus ke input yang benar saat pertama kali dimuat
         });
     </script>
 </body>

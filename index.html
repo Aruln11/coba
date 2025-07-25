@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>nge cv yuk</title></title>
+    <title>nge cv yuk</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
@@ -137,7 +137,6 @@
             .input-group { flex-direction: column; align-items: stretch; }
         }
         
-        /* --- CSS untuk input tersembunyi --- */
         #hidden-input {
             position: absolute; top: -9999px; left: -9999px; opacity: 0;
             pointer-events: none; width: 0; height: 0; border: none;
@@ -195,7 +194,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // --- Elemen Global ---
             const terminalContainer = document.getElementById('terminal-container');
             const rekap1Container = document.getElementById('rekap1-container');
             const rekap2Container = document.getElementById('rekap2-container');
@@ -440,39 +438,29 @@
                         break;
                 }
             }
-
-            // --- PEROMBAKAN TOTAL BAGIAN INPUT ---
-            // 1. Fokus ke input tersembunyi saat terminal diklik
+            
             terminalContainer.addEventListener('click', () => {
                 if (isTerminalActive) {
                     hiddenInput.focus();
                 }
             });
 
-            // 2. Sinkronkan input tersembunyi dengan tampilan
             hiddenInput.addEventListener('input', () => {
                 commandDisplay.textContent = hiddenInput.value;
             });
 
-            // 3. Proses perintah saat form disubmit (Enter ditekan)
             terminalForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 if (!isTerminalActive) return;
-
                 const originalInput = hiddenInput.value.trim();
                 const command = originalInput.toLowerCase();
-
                 if (originalInput) print(`>_ ${originalInput}`);
-                
                 hiddenInput.value = '';
                 commandDisplay.textContent = '';
-                
                 if (command === '') return;
-                
                 if (command === 'cls') { clearScreen(); showPrompt(); return; }
                 if (command === 'help') { showHelp(); return; }
                 if (command === 'batal') { stage = 'welcome'; params = {}; print("\nProses dibatalkan.", 'info'); clearScreen(); showPrompt(); return; }
-
                 if (command.startsWith('rekap')) {
                     if (command === 'rekap 1') {
                         isTerminalActive = false;
@@ -489,7 +477,6 @@
                     }
                     return;
                 }
-
                 switch (stage) {
                     case 'welcome': 
                         if (command === 'start') { stage = 'get_default_country'; showPrompt(); } 
@@ -638,7 +625,7 @@
             setupRekap1Tool();
             setupRekap2Tool();
             showPrompt();
-            hiddenInput.focus(); // Fokus awal saat halaman dimuat
+            hiddenInput.focus();
         });
     </script>
 </body>

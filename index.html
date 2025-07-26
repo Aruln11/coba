@@ -136,7 +136,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* --- PERBAIKAN 1: Styling untuk input asli agar terlihat seperti terminal --- */
         .prompt-text {
             margin-right: 8px;
         }
@@ -148,10 +147,9 @@
             font-family: 'Share Tech Mono', monospace;
             font-size: 16px;
             width: 100%;
-            caret-color: var(--main-color); /* kursor ketik asli */
+            caret-color: var(--main-color);
         }
-        .cursor { display: none; } /* Sembunyikan kursor palsu */
-        /* -------------------------------------------------------------------------- */
+        .cursor { display: none; }
         
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -176,8 +174,9 @@
         <div class="prompt-line">
             <span class="prompt-text">>_</span>
             <input type="text" id="command-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus />
-            <span class="cursor"></span> </div>
+            <span class="cursor"></span>
         </div>
+    </div>
 
     <div id="rekap1-container" class="main-container rekap-container" style="display:none;">
         <h1>Rekap Khusus Admin</h1>
@@ -225,31 +224,28 @@
             const output = document.getElementById('output');
             const loader = document.getElementById('loader');
             const loaderText = document.getElementById('loader-text');
-            
-            // --- PERBAIKAN 1: Menggunakan elemen input yang sebenarnya ---
             const commandInput = document.getElementById('command-input');
             let isTerminalActive = true; 
 
-            // PERBAIKAN 1: Fokuskan ke input saat terminal diklik agar keyboard muncul
+            // --- PERBAIKAN BUG DROPDOWN ---
+            // Listener klik sekarang mengabaikan klik pada A, BUTTON, dan SELECT
             terminalContainer.addEventListener('click', (e) => {
-                if(e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') {
+                if(e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT') {
                     commandInput.focus();
                 }
             });
-            // ----------------------------------------------------------
+            // -----------------------------
 
             let stage = 'welcome';
             let params = {};
             const countryCodes = { '62': 'Indonesia', '852': 'Hong Kong', '1': 'Amerika', '54': 'Argentina', '49': 'Jerman', '60': 'Malaysia' };
             const countryCodeKeys = Object.keys(countryCodes).sort((a, b) => a.length - b.length);
             
-            // --- PERBAIKAN 2: Fungsi utilitas untuk scroll terminal ke bawah ---
             function scrollTerminalToBottom() {
                 setTimeout(() => {
                     terminalContainer.scrollTop = terminalContainer.scrollHeight;
                 }, 0);
             }
-            // -----------------------------------------------------------------
 
             function print(message, className = '') { const p = document.createElement('p'); p.className = className; p.innerHTML = message.replace(/\n/g, '<br>'); output.appendChild(p); scrollTerminalToBottom(); }
             function showInput() { document.querySelector('.prompt-line').style.display = 'flex'; commandInput.focus(); }
@@ -319,12 +315,11 @@
                 link.download = fileName;
                 link.innerHTML = `[ Download ${fileName} ]`;
                 const p = document.createElement('p'); p.appendChild(link); output.appendChild(p);
-                scrollTerminalToBottom(); // PERBAIKAN 2: Pastikan terminal scroll setelah link dibuat
+                scrollTerminalToBottom();
             }
 
             function generateAndDownloadZIP(vcfData, fileBase, totalContacts, perFile) {
                 showLoader('Menggabungkan file ke dalam ZIP...');
-                // Gunakan try-catch untuk menangani jika JSZip gagal dimuat
                 try {
                     const zip = new JSZip();
                     vcfData.forEach(file => { zip.file(file.name, file.content); });
@@ -365,7 +360,7 @@
                             });
                         };
                         output.appendChild(copyButton);
-                        scrollTerminalToBottom(); // PERBAIKAN 2: Scroll setelah semua elemen download ditambahkan
+                        scrollTerminalToBottom();
                     }).catch(err => {
                         hideLoader();
                         print(`Error saat membuat ZIP: ${err}`, 'error');
@@ -517,7 +512,6 @@
                 showInput();
             }
             
-            // --- PERBAIKAN 1: Mengganti listener 'keydown' dokumen dengan listener di input ---
             commandInput.addEventListener('keydown', function(e) {
                 if (!isTerminalActive) return;
 
@@ -525,7 +519,7 @@
                     e.preventDefault();
                     const originalInput = commandInput.value.trim();
                     const command = originalInput.toLowerCase();
-                    commandInput.value = ''; // Kosongkan input setelah dikirim
+                    commandInput.value = '';
 
                     if (originalInput) print(`>_ ${originalInput}`);
                     if (command === '') return;
@@ -596,8 +590,6 @@
                     }
                 }
             });
-            // Hapus listener 'keydown' global dan 'paste' yang lama karena tidak diperlukan lagi
-            // ---------------------------------------------------------------------------------
             
             function setupRekap1Tool() {
                 const rekapDataEl = document.getElementById('rekap1-data');
